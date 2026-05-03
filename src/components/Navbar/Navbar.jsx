@@ -1,6 +1,8 @@
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router-dom'
+import { useCart } from '../../context/CartContext'
 
-const Navbar = ({ cartItems }) => {
+const Navbar = () => {
+  const { cartItems } = useCart()
   const totalItems = cartItems.reduce((total, item) => total + item.quantity, 0)
 
   return (

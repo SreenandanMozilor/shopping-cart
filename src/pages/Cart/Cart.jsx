@@ -1,4 +1,7 @@
-const Cart = ({ cartItems, updateQuantity }) => {
+import { useCart } from '../../context/CartContext'
+
+const Cart = () => {
+  const { cartItems, updateQuantity } = useCart()
   const totalPrice = cartItems.reduce((total, item) => {
     return total + (item.price * item.quantity)
   }, 0)
