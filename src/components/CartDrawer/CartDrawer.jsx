@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { FiX, FiShoppingBag } from 'react-icons/fi'
 import { useCart } from '../../context/CartContext'
 import './CartDrawer.css'
+import PropTypes from 'prop-types'
 
 const CartDrawer = ({ isOpen, onClose }) => {
   const { cartItems, updateQuantity } = useCart()
@@ -75,6 +76,11 @@ const CartDrawer = ({ isOpen, onClose }) => {
       </div>
     </>
   )
+}
+
+CartDrawer.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired
 }
 
 export default CartDrawer

@@ -92,7 +92,7 @@ const Signup = () => {
           <button onClick={handleSubmit}>Sign Up</button>
         </div>
         <p className="auth-footer">
-          Don't have an account? <Link to="/signup">Sign up</Link>
+          Already have an account? <Link to="/login">Login</Link>
         </p>
       </div>
     </div>

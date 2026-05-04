@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useEffect, useState } from 'react'
+import { useAuth } from '../../context/AuthContext'
 import './Home.css'
 
 const categoryImages = {
@@ -28,6 +29,7 @@ const getDiscountedPrice = (price) => {
 }
 
 const Home = () => {
+  const { currentUser } = useAuth()
   const [featured, setFeatured] = useState([])
   const [activeCategory, setActiveCategory] = useState('all')
   const categories = ['all', "men's clothing", "women's clothing", "jewelery", "electronics"]
@@ -57,7 +59,9 @@ const Home = () => {
           <p>Discover the latest trends in fashion. Shop our exclusive collection with up to 50% off on selected items.</p>
           <div className="hero-buttons">
             <Link to="/shop" className="btn-primary">Shop Now →</Link>
-            <Link to="/signup" className="btn-secondary">Sign Up</Link>
+            {!currentUser && (
+              <Link to="/signup" className="btn-secondary">Sign Up</Link>
+            )}
           </div>
         </div>
       </section>

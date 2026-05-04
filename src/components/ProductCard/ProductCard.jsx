@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useCart } from '../../context/CartContext'
 import './ProductCard.css'
+import PropTypes from 'prop-types'
 
 const ProductCard = ({ product }) => {
   const [quantity, setQuantity] = useState(1)
@@ -36,6 +37,16 @@ const ProductCard = ({ product }) => {
       </div>
     </div>
   )
+}
+
+ProductCard.propTypes = {
+  product: PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    title: PropTypes.string.isRequired,
+    price: PropTypes.number.isRequired,
+    image: PropTypes.string.isRequired,
+    category: PropTypes.string.isRequired,
+  }).isRequired,
 }
 
 export default ProductCard
