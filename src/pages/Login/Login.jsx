@@ -1,25 +1,47 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../../context/AuthContext'
+import { useCart } from '../../context/CartContext'
 
 const Login = () => {
-  const [email, setEmail] = useState('')
+  const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState(null)
+  const { login } = useAuth()
+  const { addToCart } = useCart()
   const navigate = useNavigate()
 
-  const handleSubmit = (e) => {
+  const validateEmail = (email) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+  }
+
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    
-    if (!email || !password) {
+
+    if (!identifier || !password) {
       setError('Please fill in all fields')
       return
     }
 
-    // Fake auth - in real app this would call an API
-    if (email === 'user@test.com' && password === 'password123') {
+    if (identifier.includes('@') && !validateEmail(identifier)) {
+      setError('Please enter a valid email address')
+      return
+    }
+
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters')
+      return
+    }
+
+    try {
+      await login(identifier, password)
+      const savedCart = JSON.parse(
+        localStorage.getItem(`cart_${identifier}`) || '[]'
+      )
+      savedCart.forEach(item => addToCart(item))
       navigate('/')
-    } else {
-      setError('Invalid email or password')
+    } catch (err) {
+      setError(err.message)
     }
   }
 
@@ -30,12 +52,12 @@ const Login = () => {
         {error && <p className="error">{error}</p>}
         <div>
           <div className="form-group">
-            <label>Email</label>
+            <label>Email or Username</label>
             <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
+              type="text"
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
+              placeholder="Enter your email or username"
             />
           </div>
           <div className="form-group">

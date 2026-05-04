@@ -1,9 +1,20 @@
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useCart } from '../../context/CartContext'
+import { useAuth } from '../../context/AuthContext'
+import { Link } from 'react-router-dom'
 
 const Navbar = () => {
-  const { cartItems } = useCart()
+  const { cartItems, clearCart } = useCart()
+  const { currentUser, logout } = useAuth()
+  const navigate = useNavigate()
   const totalItems = cartItems.reduce((total, item) => total + item.quantity, 0)
+
+  const handleLogout = () => {
+    if (currentUser) saveUserCart(currentUser.email)
+    clearCart()
+    logout()
+    navigate('/login')
+  }
 
   return (
     <nav>
@@ -14,7 +25,11 @@ const Navbar = () => {
         <Link to="/">Home</Link>
         <Link to="/shop">Shop</Link>
         <Link to="/cart">Cart ({totalItems})</Link>
-        <Link to="/login">Login</Link>
+        {currentUser ? (
+          <button onClick={handleLogout}>Logout</button>
+        ) : (
+          <Link to="/login">Login</Link>
+        )}
       </div>
     </nav>
   )

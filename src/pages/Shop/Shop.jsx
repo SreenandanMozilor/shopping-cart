@@ -1,4 +1,6 @@
 import { useCart } from '../../context/CartContext'
+import { useEffect, useState } from 'react'
+import ProductCard from '../../components/ProductCard/ProductCard'
 
 const Shop = () => {
   const { addToCart } = useCart()

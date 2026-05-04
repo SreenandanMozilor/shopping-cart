@@ -33,8 +33,21 @@ export const CartProvider = ({ children }) => {
     }
   }
 
+  const loadUserCart = (email) => {
+    const savedCart = JSON.parse(
+      localStorage.getItem(`cart_${email}`) || '[]'
+    )
+    setCartItems(savedCart)
+  }
+
+  const saveUserCart = (email) => {
+    localStorage.setItem(`cart_${email}`, JSON.stringify(cartItems))
+  }
+
+  const clearCart = () => setCartItems([])
+
   return (
-    <CartContext.Provider value={{ cartItems, addToCart, updateQuantity }}>
+    <CartContext.Provider value={{ cartItems, addToCart, updateQuantity, clearCart, loadUserCart, saveUserCart}}>
       {children}
     </CartContext.Provider>
   )

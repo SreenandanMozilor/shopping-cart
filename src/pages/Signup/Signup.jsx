@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../../context/AuthContext'
 
 const Signup = () => {
   const [name, setName] = useState('')
@@ -7,7 +8,12 @@ const Signup = () => {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState(null)
+  const { signup } = useAuth()
   const navigate = useNavigate()
+
+  const validateEmail = (email) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+  }
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -17,13 +23,27 @@ const Signup = () => {
       return
     }
 
+    if (!validateEmail(email)) {
+      setError('Please enter a valid email address')
+      return
+    }
+
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters')
+      return
+    }
+
     if (password !== confirmPassword) {
       setError('Passwords do not match')
       return
     }
 
-    // No real backend - just navigate to login
-    navigate('/login')
+    try {
+      signup(name, email, password)
+      navigate('/login')
+    } catch (err) {
+      setError(err.message)
+    }
   }
 
   return (
