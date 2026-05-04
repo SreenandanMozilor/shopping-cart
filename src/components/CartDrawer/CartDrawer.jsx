@@ -44,10 +44,15 @@ const CartDrawer = ({ isOpen, onClose }) => {
                 <div className="drawer-item-info">
                   <p className="drawer-item-title">{item.title}</p>
                   <p className="drawer-item-price">${item.price}</p>
+                  {item.selectedColor && (
+                    <p style={{ fontSize: '0.85rem', color: '#999' }}>
+                      {item.selectedColor}{item.selectedSize ? ` / ${item.selectedSize}` : ''}
+                    </p>
+                  )}
                   <div className="drawer-item-controls">
-                    <button onClick={() => updateQuantity(item.id, item.quantity - 1)}>-</button>
+                    <button onClick={() => updateQuantity(item.id, item.quantity - 1, item.selectedColor, item.selectedSize)}>-</button>
                     <span>{item.quantity}</span>
-                    <button onClick={() => updateQuantity(item.id, item.quantity + 1)}>+</button>
+                    <button onClick={() => updateQuantity(item.id, item.quantity + 1, item.selectedColor, item.selectedSize)}>+</button>
                   </div>
                 </div>
                 <p className="drawer-item-total">

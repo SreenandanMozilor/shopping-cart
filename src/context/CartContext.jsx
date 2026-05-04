@@ -7,25 +7,39 @@ export const CartProvider = ({ children, initialItems = [] }) => {
 
   const addToCart = (product) => {
     setCartItems(prevItems => {
-      const existingItem = prevItems.find(item => item.id === product.id)
+      const existingItem = prevItems.find(
+        item => item.id === product.id && 
+        item.selectedColor === product.selectedColor && 
+        item.selectedSize === product.selectedSize
+      )
+      
       if (existingItem) {
         return prevItems.map(item =>
-          item.id === product.id
+          item.id === product.id && 
+          item.selectedColor === product.selectedColor && 
+          item.selectedSize === product.selectedSize
             ? { ...item, quantity: item.quantity + product.quantity }
             : item
         )
       }
+      
       return [...prevItems, { ...product }]
     })
   }
 
-  const updateQuantity = (productId, newQuantity) => {
+  const updateQuantity = (productId, newQuantity, selectedColor, selectedSize) => {
     if (newQuantity < 1) {
-      setCartItems(prev => prev.filter(item => item.id !== productId))
+      setCartItems(prev => prev.filter(
+        item => !(item.id === productId && 
+          item.selectedColor === selectedColor && 
+          item.selectedSize === selectedSize)
+      ))
     } else {
       setCartItems(prev =>
         prev.map(item =>
-          item.id === productId
+          item.id === productId && 
+          item.selectedColor === selectedColor && 
+          item.selectedSize === selectedSize
             ? { ...item, quantity: newQuantity }
             : item
         )

@@ -1,11 +1,13 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useCart } from '../../context/CartContext'
-import './ProductCard.css'
 import PropTypes from 'prop-types'
+import './ProductCard.css'
 
 const ProductCard = ({ product }) => {
   const [quantity, setQuantity] = useState(1)
   const { addToCart } = useCart()
+  const navigate = useNavigate()
 
   const handleAddToCart = () => {
     addToCart({ ...product, quantity })
@@ -17,10 +19,18 @@ const ProductCard = ({ product }) => {
         className="product-card-image"
         src={product.image}
         alt={product.title}
+        onClick={() => navigate(`/product/${product.id}`)}
+        style={{ cursor: 'pointer' }}
       />
       <div className="product-card-body">
         <p className="product-card-category">{product.category}</p>
-        <h3 className="product-card-title">{product.title}</h3>
+        <h3
+          className="product-card-title"
+          onClick={() => navigate(`/product/${product.id}`)}
+          style={{ cursor: 'pointer' }}
+        >
+          {product.title}
+        </h3>
         <p className="product-card-price">${product.price}</p>
         <div className="quantity-controls">
           <button onClick={() => setQuantity(q => Math.max(1, q - 1))}>-</button>

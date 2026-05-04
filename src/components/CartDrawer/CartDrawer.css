@@ -201,3 +201,9 @@
 .view-cart-btn:hover {
   background: #1d4ed8;
 }
+
+.drawer-item-variant {
+  font-size: 0.8rem;
+  color: #999;
+  margin-bottom: 0.25rem;
+}

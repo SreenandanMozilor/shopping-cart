@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { CartProvider } from './context/CartContext'
 import { AuthProvider } from './context/AuthContext'
 import PublicOnlyRoute from './components/ProtectedRoute/ProtectedRoute'
+import ProductDetail from './pages/ProductDetail/ProductDetail'
 import Navbar from './components/Navbar/Navbar'
 import Home from './pages/Home/Home'
 import Shop from './pages/Shop/Shop'
@@ -30,6 +31,7 @@ const App = () => {
                 <Signup />
               </PublicOnlyRoute>
             } />
+            <Route path="/product/:id" element={<ProductDetail />} />
           </Routes>
           <Footer />
         </CartProvider>

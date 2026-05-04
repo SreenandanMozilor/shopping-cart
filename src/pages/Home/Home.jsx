@@ -98,7 +98,7 @@ const Home = () => {
         </div>
         <div className="featured-grid">
           {filtered.slice(0, 8).map(product => (
-            <Link to="/shop" key={product.id} className="featured-card">
+            <Link to={`/product/${product.id}`} key={product.id} className="featured-card">
               {product.discount > 0 && (
                 <span className="badge">-{product.discount}%</span>
               )}
