@@ -58,15 +58,6 @@ const Shop = () => {
             ? `Results for "${searchParam}"`
             : 'All Products'}
         </h1>
-
-        {(categoryParam || searchParam) && (
-          <button className="clear-filter-btn" onClick={clearFilter}>
-            <FiX size={14} />
-            {categoryParam
-              ? categoryLabels[categoryParam]
-              : `"${searchParam}"`}
-          </button>
-        )}
       </div>
 
       {filteredProducts.length === 0 ? (
