@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import '../Login/Login.css'
 
 const Signup = () => {
   const [name, setName] = useState('')
@@ -90,7 +91,9 @@ const Signup = () => {
           </div>
           <button onClick={handleSubmit}>Sign Up</button>
         </div>
-        <p>Already have an account? <Link to="/login">Login</Link></p>
+        <p className="auth-footer">
+          Don't have an account? <Link to="/signup">Sign up</Link>
+        </p>
       </div>
     </div>
   )

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { useCart } from '../../context/CartContext'
+import './Login.css'
 
 const Login = () => {
   const [identifier, setIdentifier] = useState('')
@@ -71,7 +72,9 @@ const Login = () => {
           </div>
           <button onClick={handleSubmit}>Login</button>
         </div>
-        <p>Don't have an account? <Link to="/signup">Sign up</Link></p>
+        <p className="auth-footer">
+          Don't have an account? <Link to="/signup">Sign up</Link>
+        </p>
       </div>
     </div>
   )
