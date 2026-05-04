@@ -9,7 +9,7 @@ const Login = () => {
   const [password, setPassword] = useState('')
   const [error, setError] = useState(null)
   const { login } = useAuth()
-  const { addToCart } = useCart()
+  const { loadUserCart } = useCart()
   const navigate = useNavigate()
 
   const validateEmail = (email) => {
@@ -36,10 +36,13 @@ const Login = () => {
 
     try {
       await login(identifier, password)
-      const savedCart = JSON.parse(
-        localStorage.getItem(`cart_${identifier}`) || '[]'
+      const existingUsers = JSON.parse(localStorage.getItem('users') || '[]')
+      const user = existingUsers.find(
+        u => u.email === identifier || u.name === identifier
       )
-      savedCart.forEach(item => addToCart(item))
+      if (user) {
+        loadUserCart(user.email)
+      }
       navigate('/')
     } catch (err) {
       setError(err.message)

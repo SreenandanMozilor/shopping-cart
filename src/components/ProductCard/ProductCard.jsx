@@ -1,10 +1,11 @@
 import { useState } from 'react'
+import { useCart } from '../../context/CartContext'
 
-const ProductCard = ({ product, addToCart }) => {
+const ProductCard = ({ product }) => {
   const [quantity, setQuantity] = useState(1)
+  const { addToCart } = useCart()
 
   const handleAddToCart = () => {
-    console.log('handleAddToCart called, quantity:', quantity)
     addToCart({ ...product, quantity })
   }
 

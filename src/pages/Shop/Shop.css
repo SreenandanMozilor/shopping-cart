@@ -1,0 +1,62 @@
+.shop-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.shop-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.shop-header h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.clear-filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+  border-radius: 999px;
+  padding: 0.4rem 0.85rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.clear-filter-btn:hover {
+  background: #dbeafe;
+}
+
+.shop-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+}
+
+.shop-loading,
+.shop-error {
+  text-align: center;
+  padding: 4rem;
+  color: #666;
+}
+
+.no-results {
+  text-align: center;
+  padding: 4rem;
+  color: #666;
+}
+
+.no-results button {
+  color: #2563eb;
+  background: none;
+  border: none;
+  font-size: inherit;
+  text-decoration: underline;
+}
