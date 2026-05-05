@@ -40,11 +40,11 @@ const CartDrawer = ({ isOpen, onClose }) => {
           ) : (
             cartItems.map(item => (
               <div key={item.id} className="drawer-item">
-                <Link to={`/product/${item.id}`} onClick={onClose}>
+                <Link to={`/product/${item.id}${item.selectedColor ? `?color=${item.selectedColor}${item.selectedSize ? `&size=${item.selectedSize}` : ''}` : ''}`} onClick={onClose}>
                   <img src={item.image} alt={item.title} />
                 </Link>
                 <div className="drawer-item-info">
-                  <Link to={`/product/${item.id}`} onClick={onClose} className="drawer-item-title">
+                  <Link to={`/product/${item.id}${item.selectedColor ? `?color=${item.selectedColor}${item.selectedSize ? `&size=${item.selectedSize}` : ''}` : ''}`} onClick={onClose} className="drawer-item-title">
                     {item.title}
                   </Link>
                   <p className="drawer-item-price">${item.price}</p>

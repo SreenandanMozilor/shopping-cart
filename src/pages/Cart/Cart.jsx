@@ -26,11 +26,11 @@ const Cart = () => {
       <h1>Your Cart</h1>
       {cartItems.map(item => (
         <div key={item.id} className="cart-item">
-          <Link to={`/product/${item.id}`}>
+          <Link to={`/product/${item.id}${item.selectedColor ? `?color=${item.selectedColor}${item.selectedSize ? `&size=${item.selectedSize}` : ''}` : ''}`}>
             <img src={item.image} alt={item.title} />
           </Link>
           <div className="cart-item-info">
-            <Link to={`/product/${item.id}`}>
+            <Link to={`/product/${item.id}${item.selectedColor ? `?color=${item.selectedColor}${item.selectedSize ? `&size=${item.selectedSize}` : ''}` : ''}`}>
               <h3>{item.title}</h3>
             </Link>
             <p>${item.price}</p>

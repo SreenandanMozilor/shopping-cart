@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { FiArrowLeft, FiShoppingCart, FiHeart, FiCheck, FiTruck, FiLock } from 'react-icons/fi'
 import { useCart } from '../../context/CartContext'
 import './ProductDetail.css'
@@ -42,6 +42,7 @@ const getFeatures = (category) => {
 const ProductDetail = () => {
   const { id } = useParams()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const { addToCart } = useCart()
 
   const [product, setProduct] = useState(null)
@@ -58,20 +59,24 @@ const ProductDetail = () => {
       .then(data => {
         setProduct(data)
         setPriceInfo(getDiscount(data.price))
+        const colorParam = searchParams.get('color')
+        const sizeParam = searchParams.get('size')
+        if (colorParam) setSelectedColor(colorParam)
+        if (sizeParam) setSelectedSize(sizeParam)
         setLoading(false)
       })
-  }, [id])
+  }, [id, searchParams])
 
   const handleAddToCart = () => {
-    addToCart({ 
-        ...product, 
-        quantity,
-        selectedColor: selectedColor || colors[0] || null,
-        selectedSize: selectedSize || sizes[0] || null,
+    addToCart({
+      ...product,
+      quantity,
+      selectedColor: selectedColor || colors[0] || null,
+      selectedSize: selectedSize || sizes[0] || null,
     })
     setAdded(true)
     setTimeout(() => setAdded(false), 2000)
-}
+  }
 
   if (loading) return <div className="detail-loading">Loading...</div>
   if (!product) return <div className="detail-loading">Product not found</div>
@@ -88,7 +93,6 @@ const ProductDetail = () => {
       </button>
 
       <div className="detail-content">
-        {/* Left — Image */}
         <div className="detail-image-section">
           {priceInfo.discount > 0 && (
             <span className="detail-badge">-{priceInfo.discount}%</span>
@@ -96,7 +100,6 @@ const ProductDetail = () => {
           <img src={product.image} alt={product.title} />
         </div>
 
-        {/* Right — Info */}
         <div className="detail-info">
           <p className="detail-category">{product.category.toUpperCase()}</p>
           <h1>{product.title}</h1>
