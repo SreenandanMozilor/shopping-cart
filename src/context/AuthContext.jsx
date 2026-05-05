@@ -1,9 +1,25 @@
-import { createContext, useContext, useState } from 'react'
+import { createContext, useContext, useState, useEffect } from 'react'
 
 const AuthContext = createContext()
 
 export const AuthProvider = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState(null)
+  const [currentUser, setCurrentUser] = useState(() => {
+    // Persist login across page refreshes
+    try {
+      const saved = localStorage.getItem('currentUser')
+      return saved ? JSON.parse(saved) : null
+    } catch {
+      return null
+    }
+  })
+
+  useEffect(() => {
+    if (currentUser) {
+      localStorage.setItem('currentUser', JSON.stringify(currentUser))
+    } else {
+      localStorage.removeItem('currentUser')
+    }
+  }, [currentUser])
 
   const signup = (name, email, password) => {
     const existingUsers = JSON.parse(localStorage.getItem('users') || '[]')

@@ -17,15 +17,17 @@ const categoryLabels = {
   "electronics": "Electronics",
 }
 
-const getDiscountedPrice = (price) => {
+// Stable discounts — computed once and cached
+const discountMap = {}
+const getStableDiscount = (id, price) => {
+  if (discountMap[id]) return discountMap[id]
   const discounts = [0, 0, 0, 10, 15, 20, 25, 33, 40]
   const discount = discounts[Math.floor(Math.random() * discounts.length)]
-  return {
+  discountMap[id] = {
     discount,
-    originalPrice: discount
-      ? (price / (1 - discount / 100)).toFixed(2)
-      : null
+    originalPrice: discount ? (price / (1 - discount / 100)).toFixed(2) : null
   }
+  return discountMap[id]
 }
 
 const Home = () => {
@@ -40,7 +42,7 @@ const Home = () => {
       .then(data => {
         const withDiscounts = data.map(p => ({
           ...p,
-          ...getDiscountedPrice(p.price)
+          ...getStableDiscount(p.id, p.price)
         }))
         setFeatured(withDiscounts)
       })

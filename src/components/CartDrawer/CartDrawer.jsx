@@ -7,9 +7,11 @@ import PropTypes from 'prop-types'
 const CartDrawer = ({ isOpen, onClose }) => {
   const { cartItems, updateQuantity } = useCart()
 
+  const totalItems = cartItems.reduce((total, item) => total + item.quantity, 0)
   const totalPrice = cartItems.reduce(
     (total, item) => total + item.price * item.quantity, 0
   )
+  const shippingCost = totalPrice >= 50 ? 0 : 9.99
 
   return (
     <>
@@ -22,7 +24,7 @@ const CartDrawer = ({ isOpen, onClose }) => {
       {/* Drawer */}
       <div className={`cart-drawer ${isOpen ? 'open' : ''}`}>
         <div className="drawer-header">
-          <h2>Shopping Cart ({cartItems.length})</h2>
+          <h2>Shopping Cart ({totalItems})</h2>
           <button className="close-btn" onClick={onClose}>
             <FiX size={22} />
           </button>
@@ -39,7 +41,7 @@ const CartDrawer = ({ isOpen, onClose }) => {
             </div>
           ) : (
             cartItems.map(item => (
-              <div key={item.id} className="drawer-item">
+              <div key={`${item.id}-${item.selectedColor}-${item.selectedSize}`} className="drawer-item">
                 <Link to={`/product/${item.id}${item.selectedColor ? `?color=${item.selectedColor}${item.selectedSize ? `&size=${item.selectedSize}` : ''}` : ''}`} onClick={onClose}>
                   <img src={item.image} alt={item.title} />
                 </Link>
@@ -54,7 +56,7 @@ const CartDrawer = ({ isOpen, onClose }) => {
                     </p>
                   )}
                   <div className="drawer-item-controls">
-                    <button onClick={() => updateQuantity(item.id, item.quantity - 1, item.selectedColor, item.selectedSize)}>-</button>
+                    <button onClick={() => updateQuantity(item.id, item.quantity - 1, item.selectedColor, item.selectedSize)}>−</button>
                     <span>{item.quantity}</span>
                     <button onClick={() => updateQuantity(item.id, item.quantity + 1, item.selectedColor, item.selectedSize)}>+</button>
                   </div>
@@ -75,12 +77,12 @@ const CartDrawer = ({ isOpen, onClose }) => {
             </div>
             <div className="drawer-subtotal">
               <span>Shipping</span>
-              <span>{totalPrice >= 50 ? 'FREE' : '$9.99'}</span>
+              <span>{shippingCost === 0 ? 'FREE' : `$${shippingCost.toFixed(2)}`}</span>
             </div>
             <div className="drawer-total">
               <span>Total</span>
               <span>
-                ${(totalPrice >= 50 ? totalPrice : totalPrice + 9.99).toFixed(2)}
+                ${(totalPrice + shippingCost).toFixed(2)}
               </span>
             </div>
             <Link

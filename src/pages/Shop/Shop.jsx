@@ -58,6 +58,12 @@ const Shop = () => {
             ? `Results for "${searchParam}"`
             : 'All Products'}
         </h1>
+        {(categoryParam || searchParam) && (
+          <button className="clear-filter-btn" onClick={clearFilter}>
+            <FiX size={14} />
+            Clear filter
+          </button>
+        )}
       </div>
 
       {filteredProducts.length === 0 ? (
@@ -65,14 +71,17 @@ const Shop = () => {
           <p>No products found. <button onClick={clearFilter}>Clear filter</button></p>
         </div>
       ) : (
-        <div className="shop-grid">
-          {filteredProducts.map(product => (
-            <ProductCard
-              key={product.id}
-              product={product}
-            />
-          ))}
-        </div>
+        <>
+          <p className="results-count">{filteredProducts.length} products</p>
+          <div className="shop-grid">
+            {filteredProducts.map(product => (
+              <ProductCard
+                key={product.id}
+                product={product}
+              />
+            ))}
+          </div>
+        </>
       )}
     </div>
   )

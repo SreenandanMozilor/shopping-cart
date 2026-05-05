@@ -1,14 +1,129 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { FiArrowLeft, FiCreditCard, FiTruck, FiShield } from 'react-icons/fi'
 import { useCart } from '../../context/CartContext'
+import { useAuth } from '../../context/AuthContext'
 import './Checkout.css'
 
-const TAX_RATE = 0.08 // 8% — change this value to update tax globally
+const TAX_RATE = 0.08
+
+// ── Validators ────────────────────────────────────────────────────────────────
+
+const validators = {
+  firstName: (v) => {
+    if (!v.trim()) return 'First name is required'
+    if (v.trim().length < 2) return 'Must be at least 2 characters'
+    if (!/^[a-zA-Z\s'-]+$/.test(v)) return 'Letters only'
+    return ''
+  },
+  lastName: (v) => {
+    if (!v.trim()) return 'Last name is required'
+    if (v.trim().length < 2) return 'Must be at least 2 characters'
+    if (!/^[a-zA-Z\s'-]+$/.test(v)) return 'Letters only'
+    return ''
+  },
+  email: (v) => {
+    if (!v.trim()) return 'Email is required'
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return 'Enter a valid email address'
+    return ''
+  },
+  phone: (v) => {
+    const digits = v.replace(/\D/g, '')
+    if (!v.trim()) return 'Phone number is required'
+    if (digits.length < 7) return 'Too short'
+    if (digits.length > 15) return 'Too long'
+    return ''
+  },
+  address: (v) => {
+    if (!v.trim()) return 'Street address is required'
+    if (v.trim().length < 5) return 'Enter a complete address'
+    return ''
+  },
+  city: (v) => {
+    if (!v.trim()) return 'City is required'
+    if (!/^[a-zA-Z\s'-]+$/.test(v)) return 'Letters only'
+    return ''
+  },
+  state: (v) => {
+    if (!v.trim()) return 'State is required'
+    return ''
+  },
+  zip: (v) => {
+    const digits = v.replace(/\D/g, '')
+    if (!v.trim()) return 'ZIP code is required'
+    if (!/^\d{4,10}$/.test(digits)) return 'Enter a valid ZIP code'
+    return ''
+  },
+  cardNumber: (v) => {
+    const digits = v.replace(/\s/g, '')
+    if (!digits) return 'Card number is required'
+    if (!/^\d+$/.test(digits)) return 'Numbers only'
+    if (digits.length !== 16) return 'Must be 16 digits'
+    return ''
+  },
+  expiry: (v) => {
+    if (!v) return 'Expiry date is required'
+    if (!/^\d{2}\/\d{2}$/.test(v)) return 'Use MM/YY format'
+    const [month, year] = v.split('/').map(Number)
+    if (month < 1 || month > 12) return 'Invalid month'
+    const now = new Date()
+    const fullYear = 2000 + year
+    if (fullYear < now.getFullYear() || (fullYear === now.getFullYear() && month < now.getMonth() + 1)) {
+      return 'Card has expired'
+    }
+    return ''
+  },
+  cvv: (v) => {
+    if (!v) return 'CVV is required'
+    if (!/^\d{3,4}$/.test(v)) return 'Must be 3 or 4 digits'
+    return ''
+  },
+  cardName: (v) => {
+    if (!v.trim()) return 'Cardholder name is required'
+    if (!/^[a-zA-Z\s'-]+$/.test(v)) return 'Letters only'
+    if (v.trim().split(/\s+/).length < 2) return 'Enter full name as on card'
+    return ''
+  },
+}
+
+// ── Auto-formatters (called on change) ───────────────────────────────────────
+
+const formatPhone = (raw) => {
+  // Strip everything except digits and leading +
+  const digits = raw.replace(/[^\d+]/g, '')
+  return digits
+}
+
+const formatCardNumber = (raw) => {
+  const digits = raw.replace(/\D/g, '').slice(0, 16)
+  return digits.replace(/(.{4})/g, '$1 ').trim()
+}
+
+const formatExpiry = (raw) => {
+  const digits = raw.replace(/\D/g, '').slice(0, 4)
+  if (digits.length >= 3) return `${digits.slice(0, 2)}/${digits.slice(2)}`
+  return digits
+}
+
+const formatCvv = (raw) => raw.replace(/\D/g, '').slice(0, 4)
+
+const formatZip = (raw) => raw.replace(/[^\d-]/g, '').slice(0, 10)
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 const Checkout = () => {
   const { cartItems, clearCart } = useCart()
+  const { currentUser } = useAuth()
   const navigate = useNavigate()
+
+  // Redirect to login if not logged in, then come back here after
+  useEffect(() => {
+    if (!currentUser) {
+      navigate('/login', { state: { from: '/checkout' } })
+    }
+  }, [currentUser, navigate])
+
+  if (!currentUser) return null
 
   const [shipping, setShipping] = useState({
     firstName: '', lastName: '', email: '',
@@ -20,55 +135,81 @@ const Checkout = () => {
   })
 
   const [errors, setErrors] = useState({})
+  const [touched, setTouched] = useState({})
   const [processing, setProcessing] = useState(false)
 
-  const subtotal = cartItems.reduce(
-    (total, item) => total + item.price * item.quantity, 0
-  )
+  const subtotal = cartItems.reduce((t, i) => t + i.price * i.quantity, 0)
   const shippingCost = subtotal >= 50 ? 0 : 9.99
   const tax = subtotal * TAX_RATE
   const total = subtotal + shippingCost + tax
 
+  // ── Handlers ───────────────────────────────────────────────────────────────
+
   const handleShippingChange = (e) => {
-    setShipping(prev => ({ ...prev, [e.target.name]: e.target.value }))
-    setErrors(prev => ({ ...prev, [e.target.name]: '' }))
+    let { name, value } = e.target
+    if (name === 'phone') value = formatPhone(value)
+    if (name === 'zip') value = formatZip(value)
+    setShipping(prev => ({ ...prev, [name]: value }))
+    if (touched[name]) {
+      setErrors(prev => ({ ...prev, [name]: validators[name]?.(value) || '' }))
+    }
   }
 
   const handlePaymentChange = (e) => {
-    setPayment(prev => ({ ...prev, [e.target.name]: e.target.value }))
-    setErrors(prev => ({ ...prev, [e.target.name]: '' }))
+    let { name, value } = e.target
+    if (name === 'cardNumber') value = formatCardNumber(value)
+    if (name === 'expiry') value = formatExpiry(value)
+    if (name === 'cvv') value = formatCvv(value)
+    setPayment(prev => ({ ...prev, [name]: value }))
+    if (touched[name]) {
+      setErrors(prev => ({ ...prev, [name]: validators[name]?.(value) || '' }))
+    }
   }
 
-  const validate = () => {
+  const handleBlur = (e) => {
+    const { name, value } = e.target
+    setTouched(prev => ({ ...prev, [name]: true }))
+    const allValues = { ...shipping, ...payment, [name]: value }
+    setErrors(prev => ({ ...prev, [name]: validators[name]?.(allValues[name]) || '' }))
+  }
+
+  const validateAll = () => {
+    const allValues = { ...shipping, ...payment }
     const newErrors = {}
-    if (!shipping.firstName) newErrors.firstName = 'Required'
-    if (!shipping.lastName) newErrors.lastName = 'Required'
-    if (!shipping.email) newErrors.email = 'Required'
-    if (!shipping.phone) newErrors.phone = 'Required'
-    if (!shipping.address) newErrors.address = 'Required'
-    if (!shipping.city) newErrors.city = 'Required'
-    if (!shipping.state) newErrors.state = 'Required'
-    if (!shipping.zip) newErrors.zip = 'Required'
-    if (!payment.cardNumber) newErrors.cardNumber = 'Required'
-    if (!payment.expiry) newErrors.expiry = 'Required'
-    if (!payment.cvv) newErrors.cvv = 'Required'
-    if (!payment.cardName) newErrors.cardName = 'Required'
+    for (const [field, validate] of Object.entries(validators)) {
+      const msg = validate(allValues[field] ?? '')
+      if (msg) newErrors[field] = msg
+    }
+    // Mark everything as touched so errors show
+    const allTouched = Object.fromEntries(Object.keys(validators).map(k => [k, true]))
+    setTouched(allTouched)
+    setErrors(newErrors)
     return newErrors
   }
 
   const handlePlaceOrder = () => {
-    const newErrors = validate()
+    const newErrors = validateAll()
     if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors)
+      // Scroll to first error
+      const firstErrorField = document.querySelector('.error-input')
+      firstErrorField?.scrollIntoView({ behavior: 'smooth', block: 'center' })
       return
     }
-
     setProcessing(true)
     setTimeout(() => {
       clearCart()
       navigate('/order-confirmation')
     }, 1500)
   }
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
+
+  const fieldClass = (name) => errors[name] && touched[name] ? 'error-input' : ''
+  const fieldError = (name) => touched[name] && errors[name]
+    ? <span className="field-error">{errors[name]}</span>
+    : null
+
+  // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
     <div className="checkout-page">
@@ -81,6 +222,7 @@ const Checkout = () => {
       <div className="checkout-content">
         {/* Left — Forms */}
         <div className="checkout-forms">
+
           {/* Shipping */}
           <div className="checkout-section">
             <h2>Shipping Information</h2>
@@ -89,84 +231,107 @@ const Checkout = () => {
                 <label>First Name</label>
                 <input
                   name="firstName"
+                  placeholder="John"
                   value={shipping.firstName}
                   onChange={handleShippingChange}
-                  className={errors.firstName ? 'error-input' : ''}
+                  onBlur={handleBlur}
+                  className={fieldClass('firstName')}
                 />
-                {errors.firstName && <span className="field-error">{errors.firstName}</span>}
+                {fieldError('firstName')}
               </div>
               <div className="form-field">
                 <label>Last Name</label>
                 <input
                   name="lastName"
+                  placeholder="Smith"
                   value={shipping.lastName}
                   onChange={handleShippingChange}
-                  className={errors.lastName ? 'error-input' : ''}
+                  onBlur={handleBlur}
+                  className={fieldClass('lastName')}
                 />
-                {errors.lastName && <span className="field-error">{errors.lastName}</span>}
+                {fieldError('lastName')}
               </div>
             </div>
+
             <div className="form-field">
               <label>Email</label>
               <input
                 name="email"
                 type="email"
+                placeholder="john@example.com"
                 value={shipping.email}
                 onChange={handleShippingChange}
-                className={errors.email ? 'error-input' : ''}
+                onBlur={handleBlur}
+                className={fieldClass('email')}
               />
-              {errors.email && <span className="field-error">{errors.email}</span>}
+              {fieldError('email')}
             </div>
+
             <div className="form-field">
               <label>Phone Number</label>
               <input
                 name="phone"
+                type="tel"
+                placeholder="+1234567890"
                 value={shipping.phone}
                 onChange={handleShippingChange}
-                className={errors.phone ? 'error-input' : ''}
+                onBlur={handleBlur}
+                className={fieldClass('phone')}
+                maxLength={16}
               />
-              {errors.phone && <span className="field-error">{errors.phone}</span>}
+              {fieldError('phone')}
             </div>
+
             <div className="form-field">
               <label>Street Address</label>
               <input
                 name="address"
+                placeholder="123 Main Street, Apt 4B"
                 value={shipping.address}
                 onChange={handleShippingChange}
-                className={errors.address ? 'error-input' : ''}
+                onBlur={handleBlur}
+                className={fieldClass('address')}
               />
-              {errors.address && <span className="field-error">{errors.address}</span>}
+              {fieldError('address')}
             </div>
+
             <div className="form-row three-col">
               <div className="form-field">
                 <label>City</label>
                 <input
                   name="city"
+                  placeholder="New York"
                   value={shipping.city}
                   onChange={handleShippingChange}
-                  className={errors.city ? 'error-input' : ''}
+                  onBlur={handleBlur}
+                  className={fieldClass('city')}
                 />
-                {errors.city && <span className="field-error">{errors.city}</span>}
+                {fieldError('city')}
               </div>
               <div className="form-field">
                 <label>State</label>
                 <input
                   name="state"
+                  placeholder="NY"
                   value={shipping.state}
                   onChange={handleShippingChange}
-                  className={errors.state ? 'error-input' : ''}
+                  onBlur={handleBlur}
+                  className={fieldClass('state')}
                 />
-                {errors.state && <span className="field-error">{errors.state}</span>}
+                {fieldError('state')}
               </div>
               <div className="form-field">
                 <label>ZIP Code</label>
                 <input
                   name="zip"
+                  placeholder="10001"
                   value={shipping.zip}
                   onChange={handleShippingChange}
-                  className={errors.zip ? 'error-input' : ''}
+                  onBlur={handleBlur}
+                  className={fieldClass('zip')}
+                  maxLength={10}
                 />
-                {errors.zip && <span className="field-error">{errors.zip}</span>}
+                {fieldError('zip')}
               </div>
             </div>
           </div>
@@ -181,10 +346,12 @@ const Checkout = () => {
                 placeholder="1234 5678 9012 3456"
                 value={payment.cardNumber}
                 onChange={handlePaymentChange}
-                className={errors.cardNumber ? 'error-input' : ''}
+                onBlur={handleBlur}
+                className={fieldClass('cardNumber')}
                 maxLength={19}
+                inputMode="numeric"
               />
-              {errors.cardNumber && <span className="field-error">{errors.cardNumber}</span>}
+              {fieldError('cardNumber')}
             </div>
             <div className="form-row">
               <div className="form-field">
@@ -194,10 +361,12 @@ const Checkout = () => {
                   placeholder="MM/YY"
                   value={payment.expiry}
                   onChange={handlePaymentChange}
-                  className={errors.expiry ? 'error-input' : ''}
+                  onBlur={handleBlur}
+                  className={fieldClass('expiry')}
                   maxLength={5}
+                  inputMode="numeric"
                 />
-                {errors.expiry && <span className="field-error">{errors.expiry}</span>}
+                {fieldError('expiry')}
               </div>
               <div className="form-field">
                 <label>CVV</label>
@@ -206,21 +375,25 @@ const Checkout = () => {
                   placeholder="123"
                   value={payment.cvv}
                   onChange={handlePaymentChange}
-                  className={errors.cvv ? 'error-input' : ''}
+                  onBlur={handleBlur}
+                  className={fieldClass('cvv')}
                   maxLength={4}
+                  inputMode="numeric"
                 />
-                {errors.cvv && <span className="field-error">{errors.cvv}</span>}
+                {fieldError('cvv')}
               </div>
             </div>
             <div className="form-field">
               <label>Cardholder Name</label>
               <input
                 name="cardName"
+                placeholder="John Smith"
                 value={payment.cardName}
                 onChange={handlePaymentChange}
-                className={errors.cardName ? 'error-input' : ''}
+                onBlur={handleBlur}
+                className={fieldClass('cardName')}
               />
-              {errors.cardName && <span className="field-error">{errors.cardName}</span>}
+              {fieldError('cardName')}
             </div>
           </div>
 

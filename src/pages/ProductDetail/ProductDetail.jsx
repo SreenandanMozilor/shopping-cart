@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { FiArrowLeft, FiShoppingCart, FiHeart, FiCheck, FiTruck, FiLock } from 'react-icons/fi'
 import { useCart } from '../../context/CartContext'
@@ -18,17 +18,6 @@ const categorySizes = {
   "electronics": [],
 }
 
-const getDiscount = (price) => {
-  const discounts = [0, 0, 0, 10, 15, 20, 25, 33, 40]
-  const discount = discounts[Math.floor(Math.random() * discounts.length)]
-  return {
-    discount,
-    originalPrice: discount
-      ? (price / (1 - discount / 100)).toFixed(2)
-      : null
-  }
-}
-
 const getFeatures = (category) => {
   const features = {
     "men's clothing": ['Premium fabric blend', 'Machine washable', 'Comfortable fit', 'Durable stitching'],
@@ -37,6 +26,19 @@ const getFeatures = (category) => {
     "electronics": ['1 year warranty', 'Fast charging', 'Energy efficient', 'Compact design'],
   }
   return features[category] || ['High quality', 'Durable', 'Premium materials', 'Great value']
+}
+
+// Stable discount per product id — no randomness on re-render
+const discountCache = {}
+const getDiscount = (id, price) => {
+  if (discountCache[id]) return discountCache[id]
+  const discounts = [0, 0, 0, 10, 15, 20, 25, 33, 40]
+  const discount = discounts[Math.floor(Math.random() * discounts.length)]
+  discountCache[id] = {
+    discount,
+    originalPrice: discount ? (price / (1 - discount / 100)).toFixed(2) : null
+  }
+  return discountCache[id]
 }
 
 const ProductDetail = () => {
@@ -50,22 +52,30 @@ const ProductDetail = () => {
   const [selectedColor, setSelectedColor] = useState(null)
   const [selectedSize, setSelectedSize] = useState(null)
   const [quantity, setQuantity] = useState(1)
-  const [priceInfo, setPriceInfo] = useState({})
   const [added, setAdded] = useState(false)
 
   useEffect(() => {
+    setLoading(true)
     fetch(`https://fakestoreapi.com/products/${id}`)
       .then(res => res.json())
       .then(data => {
         setProduct(data)
-        setPriceInfo(getDiscount(data.price))
         const colorParam = searchParams.get('color')
         const sizeParam = searchParams.get('size')
         if (colorParam) setSelectedColor(colorParam)
         if (sizeParam) setSelectedSize(sizeParam)
         setLoading(false)
       })
-  }, [id, searchParams])
+  }, [id]) // intentionally not including searchParams to avoid re-fetch
+
+  if (loading) return <div className="detail-loading">Loading...</div>
+  if (!product) return <div className="detail-loading">Product not found</div>
+
+  // Define colors/sizes BEFORE any usage
+  const colors = categoryColors[product.category] || []
+  const sizes = categorySizes[product.category] || []
+  const features = getFeatures(product.category)
+  const priceInfo = getDiscount(product.id, product.price)
 
   const handleAddToCart = () => {
     addToCart({
@@ -77,13 +87,6 @@ const ProductDetail = () => {
     setAdded(true)
     setTimeout(() => setAdded(false), 2000)
   }
-
-  if (loading) return <div className="detail-loading">Loading...</div>
-  if (!product) return <div className="detail-loading">Product not found</div>
-
-  const colors = categoryColors[product.category] || []
-  const sizes = categorySizes[product.category] || []
-  const features = getFeatures(product.category)
 
   return (
     <div className="product-detail">
@@ -117,7 +120,7 @@ const ProductDetail = () => {
 
           {colors.length > 0 && (
             <div className="detail-options">
-              <p className="option-label">Color:</p>
+              <p className="option-label">Color: <strong>{selectedColor}</strong></p>
               <div className="option-buttons">
                 {colors.map(color => (
                   <button
@@ -134,7 +137,7 @@ const ProductDetail = () => {
 
           {sizes.length > 0 && (
             <div className="detail-options">
-              <p className="option-label">Size:</p>
+              <p className="option-label">Size: <strong>{selectedSize}</strong></p>
               <div className="option-buttons">
                 {sizes.map(size => (
                   <button
@@ -148,6 +151,15 @@ const ProductDetail = () => {
               </div>
             </div>
           )}
+
+          <div className="detail-qty">
+            <p className="option-label">Quantity</p>
+            <div className="qty-controls">
+              <button onClick={() => setQuantity(q => Math.max(1, q - 1))}>−</button>
+              <span>{quantity}</span>
+              <button onClick={() => setQuantity(q => q + 1)}>+</button>
+            </div>
+          </div>
 
           <div className="detail-actions">
             <button

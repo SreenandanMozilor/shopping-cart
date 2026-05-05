@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import '../Login/Login.css'
 
@@ -11,6 +11,9 @@ const Signup = () => {
   const [error, setError] = useState(null)
   const { signup } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+
+  const redirectTo = location.state?.from || '/'
 
   const validateEmail = (email) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
@@ -41,7 +44,8 @@ const Signup = () => {
 
     try {
       signup(name, email, password)
-      navigate('/login')
+      // After signup, go to login and preserve the redirect destination
+      navigate('/login', { state: { from: redirectTo } })
     } catch (err) {
       setError(err.message)
     }
@@ -51,6 +55,11 @@ const Signup = () => {
     <div className="auth-page">
       <div className="auth-card">
         <h1>Sign Up</h1>
+        {redirectTo !== '/' && (
+          <p className="auth-redirect-notice">
+            Create an account to continue to checkout
+          </p>
+        )}
         {error && <p className="error">{error}</p>}
         <div>
           <div className="form-group">
@@ -92,7 +101,7 @@ const Signup = () => {
           <button onClick={handleSubmit}>Sign Up</button>
         </div>
         <p className="auth-footer">
-          Already have an account? <Link to="/login">Login</Link>
+          Already have an account? <Link to="/login" state={{ from: redirectTo }}>Login</Link>
         </p>
       </div>
     </div>
