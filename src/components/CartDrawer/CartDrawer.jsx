@@ -69,13 +69,30 @@ const CartDrawer = ({ isOpen, onClose }) => {
 
         {cartItems.length > 0 && (
           <div className="drawer-footer">
-            <div className="drawer-total">
-              <span>Total</span>
+            <div className="drawer-subtotal">
+              <span>Subtotal</span>
               <span>${totalPrice.toFixed(2)}</span>
             </div>
+            <div className="drawer-subtotal">
+              <span>Shipping</span>
+              <span>{totalPrice >= 50 ? 'FREE' : '$9.99'}</span>
+            </div>
+            <div className="drawer-total">
+              <span>Total</span>
+              <span>
+                ${(totalPrice >= 50 ? totalPrice : totalPrice + 9.99).toFixed(2)}
+              </span>
+            </div>
+            <Link
+              to="/checkout"
+              className="view-cart-btn"
+              onClick={onClose}
+            >
+              Proceed to Checkout
+            </Link>
             <Link
               to="/cart"
-              className="view-cart-btn"
+              className="continue-shopping-link"
               onClick={onClose}
             >
               View Full Cart

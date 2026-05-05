@@ -211,3 +211,26 @@
   color: #999;
   margin-bottom: 0.25rem;
 }
+
+.drawer-subtotal {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 0.5rem;
+}
+
+.continue-shopping-link {
+  display: block;
+  width: 100%;
+  padding: 0.75rem;
+  text-align: center;
+  color: #666;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+  transition: color 0.2s;
+}
+
+.continue-shopping-link:hover {
+  color: #333;
+}
