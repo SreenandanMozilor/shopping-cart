@@ -42,6 +42,7 @@
   background: #f9f9f9;
   border-radius: 8px;
   padding: 0.5rem;
+  cursor: pointer;
 }
 
 .cart-item-info h3 {
@@ -52,6 +53,15 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+.cart-item-info a {
+  color: #333;
+  transition: color 0.2s;
+}
+
+.cart-item-info a:hover {
+  color: #2563eb;
 }
 
 .cart-item-info p {

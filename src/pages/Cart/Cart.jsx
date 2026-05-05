@@ -26,9 +26,13 @@ const Cart = () => {
       <h1>Your Cart</h1>
       {cartItems.map(item => (
         <div key={item.id} className="cart-item">
-          <img src={item.image} alt={item.title} />
+          <Link to={`/product/${item.id}`}>
+            <img src={item.image} alt={item.title} />
+          </Link>
           <div className="cart-item-info">
-            <h3>{item.title}</h3>
+            <Link to={`/product/${item.id}`}>
+              <h3>{item.title}</h3>
+            </Link>
             <p>${item.price}</p>
             {item.selectedColor && (
               <p style={{ fontSize: '0.85rem', color: '#999' }}>
